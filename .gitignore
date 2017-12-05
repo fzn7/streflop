@@ -1,0 +1,6 @@
+*.o
+libm/flt-target
+libm/dbl-target
+libstreflop-sse.so.0.0.0
+libstreflop.a
+streflop.a
