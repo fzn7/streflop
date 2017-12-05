@@ -1,0 +1,193 @@
+--- a/Math.h
++++ b/Math.h
+@@ -21,8 +21,20 @@
+ namespace streflop_libm {
+ using streflop::Simple;
+ using streflop::Double;
++
++extern const Simple SimplePositiveInfinity;
++extern const Simple SimpleNegativeInfinity;
++extern const Simple SimpleNaN;
++
++extern const Double DoublePositiveInfinity;
++extern const Double DoubleNegativeInfinity;
++extern const Double DoubleNaN;
++
+ #ifdef Extended
+ using streflop::Extended;
++extern const Extended ExtendedPositiveInfinity;
++extern const Extended ExtendedNegativeInfinity;
++extern const Extended ExtendedNaN;
+ #endif
+ 
+     extern Simple __ieee754_sqrtf(Simple x);
+@@ -51,8 +63,8 @@ using streflop::Extended;
+     extern Simple __floorf(Simple x);
+     extern Simple __ceilf(Simple x);
+     extern Simple __truncf(Simple x);
+-    extern Simple __ieee754_fmodf(Simple x, Simple x);
+-    extern Simple __ieee754_remainderf(Simple x, Simple x);
++    extern Simple __ieee754_fmodf(Simple x, Simple y);
++    extern Simple __ieee754_remainderf(Simple x, Simple y);
+     extern Simple __remquof(Simple x, Simple y, int *quo);
+     extern Simple __rintf(Simple x);
+     extern long int __lrintf(Simple x);
+@@ -108,8 +120,8 @@ using streflop::Extended;
+     extern Double __floor(Double x);
+     extern Double __ceil(Double x);
+     extern Double __trunc(Double x);
+-    extern Double __ieee754_fmod(Double x, Double x);
+-    extern Double __ieee754_remainder(Double x, Double x);
++    extern Double __ieee754_fmod(Double x, Double y);
++    extern Double __ieee754_remainder(Double x, Double y);
+     extern Double __remquo(Double x, Double y, int *quo);
+     extern Double __rint(Double x);
+     extern long int __lrint(Double x);
+@@ -161,8 +173,8 @@ using streflop::Extended;
+     extern Extended __floorl(Extended x);
+     extern Extended __ceill(Extended x);
+     extern Extended __truncl(Extended x);
+-    extern Extended __ieee754_fmodl(Extended x, Extended x);
+-    extern Extended __ieee754_remainderl(Extended x, Extended x);
++    extern Extended __ieee754_fmodl(Extended x, Extended y);
++    extern Extended __ieee754_remainderl(Extended x, Extended y);
+     extern Extended __remquol(Extended x, Extended y, int *quo);
+     extern Extended __rintl(Extended x);
+     extern long int __lrintl(Extended x);
+--- a/softfloat/softfloat.h
++++ b/softfloat/softfloat.h
+@@ -50,6 +50,9 @@ these four paragraphs for those parts of
+ 
+ =============================================================================*/
+ 
++typedef SizedInteger<64>::Type int64_t;
++typedef int64_t int64;
++
+ /*----------------------------------------------------------------------------
+ | The macro `FLOATX80' must be defined to enable the extended double-precision
+ | floating-point format `floatx80'.  If this macro is not defined, the
+@@ -131,10 +134,10 @@ floatx80 int32_to_floatx80( int );
+ #ifdef FLOAT128
+ float128 int32_to_float128( int );
+ #endif
+-float32 int64_to_float32( long long );
+-float64 int64_to_float64( long long );
++float32 int64_to_float32( int64 );
++float64 int64_to_float64( int64 );
+ #ifdef FLOATX80
+-floatx80 int64_to_floatx80( long long );
++floatx80 int64_to_floatx80( int64 );
+ #endif
+ #ifdef FLOAT128
+ float128 int64_to_float128( long long );
+@@ -145,8 +148,8 @@ float128 int64_to_float128( long long );
+ *----------------------------------------------------------------------------*/
+ int float32_to_int32( float32 );
+ int float32_to_int32_round_to_zero( float32 );
+-long long float32_to_int64( float32 );
+-long long float32_to_int64_round_to_zero( float32 );
++int64 float32_to_int64( float32 );
++int64 float32_to_int64_round_to_zero( float32 );
+ float64 float32_to_float64( float32 );
+ #ifdef FLOATX80
+ floatx80 float32_to_floatx80( float32 );
+@@ -178,8 +181,8 @@ char float32_is_signaling_nan( float32 )
+ *----------------------------------------------------------------------------*/
+ int float64_to_int32( float64 );
+ int float64_to_int32_round_to_zero( float64 );
+-long long float64_to_int64( float64 );
+-long long float64_to_int64_round_to_zero( float64 );
++int64 float64_to_int64( float64 );
++int64 float64_to_int64_round_to_zero( float64 );
+ float32 float64_to_float32( float64 );
+ #ifdef FLOATX80
+ floatx80 float64_to_floatx80( float64 );
+@@ -213,8 +216,8 @@ char float64_is_signaling_nan( float64 )
+ *----------------------------------------------------------------------------*/
+ int floatx80_to_int32( floatx80 );
+ int floatx80_to_int32_round_to_zero( floatx80 );
+-long long floatx80_to_int64( floatx80 );
+-long long floatx80_to_int64_round_to_zero( floatx80 );
++int64 floatx80_to_int64( floatx80 );
++int64 floatx80_to_int64_round_to_zero( floatx80 );
+ float32 floatx80_to_float32( floatx80 );
+ float64 floatx80_to_float64( floatx80 );
+ #ifdef FLOAT128
+--- a/Random.h
++++ b/Random.h
+@@ -173,18 +173,22 @@ template<> a_type Random12<false, true,
+ template<> a_type Random12<false, false, a_type>(RandomState& state); \
+ template<> a_type Random<a_type>(RandomState& state); \
+ template<> inline a_type Random<true, true, a_type>(a_type min, a_type max, RandomState& state) { \
++    (void)(state);\
+     a_type range = max - min;\
+     return Random12<true,true,a_type>() * range - range + min;\
+ } \
+ template<> inline a_type Random<true, false, a_type>(a_type min, a_type max, RandomState& state) { \
++    (void)(state);\
+     a_type range = max - min;\
+     return Random12<true,false,a_type>() * range - range + min;\
+ } \
+ template<> inline a_type Random<false, true, a_type>(a_type min, a_type max, RandomState& state) { \
++    (void)(state);\
+     a_type range = max - min;\
+     return Random12<false,true,a_type>() * range - range + min;\
+ } \
+ template<> inline a_type Random<false, false, a_type>(a_type min, a_type max, RandomState& state) { \
++    (void)(state);\
+     a_type range = max - min;\
+     return Random12<false,false,a_type>() * range - range + min;\
+ }
+--- a/libm/dbl-64/mpsqrt.cpp
++++ b/libm/dbl-64/mpsqrt.cpp
+@@ -42,9 +42,10 @@
+ /* p as integer. Routine computes sqrt(*x) and stores result in *y          */
+ /****************************************************************************/
+ 
++namespace streflop_libm {
++
+ Double fastiroot(Double);
+ 
+-namespace streflop_libm {
+ void __mpsqrt(mp_no *x, mp_no *y, int p) {
+ #include "mpsqrt.h"
+ 
+--- a/Math.cpp
++++ b/Math.cpp
+@@ -44,3 +44,36 @@ namespace streflop {
+ #endif
+ 
+ }
++
++namespace streflop_libm {
++
++	// MSVC chokes on these constants,
++	// TODO: we need another way to specify them. (hardcode the bitpattern?)
++#ifndef _MSC_VER
++
++    // Constants
++
++    const Simple SimplePositiveInfinity = streflop::SimplePositiveInfinity;
++    const Simple SimpleNegativeInfinity = streflop::SimpleNegativeInfinity;
++    // TODO: non-signaling version
++    const Simple SimpleNaN = streflop::SimpleNaN;
++
++    const Double DoublePositiveInfinity = streflop::DoublePositiveInfinity;
++    const Double DoubleNegativeInfinity = streflop::DoubleNegativeInfinity;
++    // TODO: non-signaling version
++    const Double DoubleNaN = streflop::DoubleNaN;
++
++// Extended are not always available
++#ifdef Extended
++
++    const Extended ExtendedPositiveInfinity = streflop::ExtendedPositiveInfinity;
++    const Extended ExtendedNegativeInfinity = streflop::ExtendedNegativeInfinity;
++    // TODO: non-signaling version
++    const Extended ExtendedNaN = streflop::ExtendedNaN;
++
++#endif
++
++#endif // _MSC_VER
++
++}
++

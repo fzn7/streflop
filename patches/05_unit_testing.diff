@@ -1,0 +1,179 @@
+--- a/Makefile
++++ b/Makefile
+@@ -40,7 +40,7 @@ TARGETS += libm/ldbl-target
+ LIBM_OBJECTS += $(ldbl-96-objects)
+ endif
+ 
+-all: streflop.a libstreflop$(FPUNAME)$(NDNAME).so
++all: streflop.a libstreflop$(FPUNAME)$(NDNAME).so.0.0.0 arithmeticTest$(FPUNAME)$(NDNAME)$(EXE_SUFFIX) randomTest$(FPUNAME)$(NDNAME)$(EXE_SUFFIX)
+ 
+ Random.o: Random.cpp Random.h Makefile FPUSettings.h Math.h streflop.h
+ 	$(CXX) -c $(CXXFLAGS) $(CPPFLAGS) Random.cpp -o Random.o
+@@ -67,27 +67,34 @@ else
+ 	@ln -fs streflop.a libstreflop.a
+ endif
+ 
+-libstreflop$(FPUNAME)$(NDNAME).so: Math.o Random.o ${USE_SOFT_BINARY}
++check: arithmeticTest$(FPUNAME)$(NDNAME)$(EXE_SUFFIX)
++	@./$< arithmeticTest$(FPUNAME)$(NDNAME)
++	@md5sum --warn --check arithmeticTest$(FPUNAME)$(NDNAME).md5
++
++libstreflop$(FPUNAME)$(NDNAME).so.0.0.0: Math.o Random.o ${USE_SOFT_BINARY}
+ 	$(MAKE) -C libm
+ 	@rm -f libstreflop$(FPUNAME)$(NDNAME).so
+ 	$(CXX) -o libstreflop$(FPUNAME)$(NDNAME).so.0.0.0 -shared -Wl,-soname=libstreflop$(FPUNAME)$(NDNAME).so.0 $(LDFLAGS) $(LIBM_OBJECTS) Math.o Random.o ${USE_SOFT_BINARY}
+ 
+-arithmeticTest$(EXE_SUFFIX): arithmeticTest.cpp streflop.a
+-	$(CXX) $(CXXFLAGS) $(CPPFLAGS) $(LDFLAGS) arithmeticTest.cpp streflop.a -o $@
++arithmeticTest$(FPUNAME)$(NDNAME)$(EXE_SUFFIX): arithmeticTest.cpp libstreflop$(FPUNAME)$(NDNAME).so.0.0.0
++	$(CXX) $(CXXFLAGS) $(CPPFLAGS) $(LDFLAGS) arithmeticTest.cpp libstreflop.a -o $@
+ 
+-randomTest$(EXE_SUFFIX): randomTest.cpp streflop.a
+-	$(CXX) $(CXXFLAGS) $(CPPFLAGS) $(LDFLAGS) randomTest.cpp streflop.a -o $@
++randomTest$(FPUNAME)$(NDNAME)$(EXE_SUFFIX): randomTest.cpp libstreflop$(FPUNAME)$(NDNAME).so.0.0.0
++	$(CXX) $(CXXFLAGS) $(CPPFLAGS) $(LDFLAGS) randomTest.cpp libstreflop.a -o $@
+ 
+-.PHONY : clean package
++.PHONY : clean package check
+ clean:
+-	@rm -fv *.o                                  \
+-		streflop.a                              \
+-		libstreflop.a                           \
+-		libstreflop$(FPUNAME)$(NDNAME).so       \
+-		libstreflop$(FPUNAME)$(NDNAME).so.0     \
+-		libstreflop$(FPUNAME)$(NDNAME).so.0.0.0 \
+-		arithmeticTest$(EXE_SUFFIX)             \
+-		randomTest$(EXE_SUFFIX)                 \
++	@rm -fv *.o                                             \
++		streflop.a                                          \
++		libstreflop.a                                       \
++		libstreflop$(FPUNAME)$(NDNAME).so                   \
++		libstreflop$(FPUNAME)$(NDNAME).so.0                 \
++		libstreflop$(FPUNAME)$(NDNAME).so.0.0.0             \
++		arithmeticTest$(FPUNAME)$(NDNAME)$(EXE_SUFFIX)      \
++		arithmeticTest$(FPUNAME)$(NDNAME)_*_basic.bin       \
++		arithmeticTest$(FPUNAME)$(NDNAME)_*_lib.bin         \
++		arithmeticTest$(FPUNAME)$(NDNAME)_*_nan.bin         \
++		randomTest$(FPUNAME)$(NDNAME)$(EXE_SUFFIX)          \
+ 		${USE_SOFT_BINARY}
+ 	$(MAKE) -C libm clean
+ 
+--- a/arithmeticTest.cpp
++++ b/arithmeticTest.cpp
+@@ -12,6 +12,7 @@
+ #include <iostream>
+ #include <fstream>
+ #include <string>
++#include <cstdlib>
+ using namespace std;
+ // clock
+ #include <time.h>
+@@ -54,21 +55,24 @@ template<class FloatType> void doTest(st
+ 
+     streflop_init<FloatType>();
+ 
+-    ofstream basicfile((s + "_" + name + "_basic.bin").c_str());
++    string filename = s + "_" + name + "_basic.bin";
++    ofstream basicfile(filename);
+     if (!basicfile) {
+-        cout << "Problem creating binary file: " << basicfile << endl;
++        cout << "Problem creating binary file: " << filename << endl;
+         exit(2);
+     }
+ 
+-    ofstream infnanfile((s + "_" + name + "_nan.bin").c_str());
++    filename = s + "_" + name + "_nan.bin";
++    ofstream infnanfile(filename);
+     if (!infnanfile) {
+-        cout << "Problem creating binary file: " << infnanfile << endl;
++        cout << "Problem creating binary file: " << filename << endl;
+         exit(3);
+     }
+ 
+-    ofstream mathlibfile((s + "_" + name + "_lib.bin").c_str());
++    filename = s + "_" + name + "_lib.bin";
++    ofstream mathlibfile(filename);
+     if (!mathlibfile) {
+-        cout << "Problem creating binary file: " << mathlibfile << endl;
++        cout << "Problem creating binary file: " << filename << endl;
+         exit(4);
+     }
+ 
+--- a/randomTest.cpp
++++ b/randomTest.cpp
+@@ -32,8 +32,8 @@ template<typename F> void checkNRandom()
+     }
+     mean /= N;
+     var = sqrt(var/N - mean*mean);
+-    cout << "meanN (should be 345.6): " << mean << endl;
+-    cout << "varN (should be 78.9): " << var << endl;
++    cout << "meanN (should be 345.6): " << static_cast<float>(mean) << endl;
++    cout << "varN (should be 78.9): " << static_cast<float>(var) << endl;
+ }
+ 
+ template<bool IEmin, bool IEmax, typename F> void checkRandom() {
+@@ -48,8 +48,8 @@ template<bool IEmin, bool IEmax, typenam
+     }
+     mean /= N;
+     var = sqrt(var/N - mean*mean);
+-    cout << "mean<"<<IEmin<<","<<IEmax<<"> (should be 400): " << mean << endl;
+-    cout << "var<"<<IEmin<<","<<IEmax<<"> = " << var << endl;
++    cout << "mean<"<<IEmin<<","<<IEmax<<"> (should be 400): " << static_cast<float>(mean) << endl;
++    cout << "var<"<<IEmin<<","<<IEmax<<"> = " << static_cast<float>(var) << endl;
+ }
+ 
+ template<typename FloatType> void showrate( clock_t start, clock_t stop, int reps )
+--- /dev/null
++++ b/arithmeticTest-soft.md5
+@@ -0,0 +1,9 @@
++a7bf08fc4c3ff85fbdf3380f346d000c  arithmeticTest-soft_double_basic.bin
++7367ea100cd95f03b1d962cfafc83f07  arithmeticTest-soft_double_lib.bin
++825de4e5d8c4742e34d809d2a101c720  arithmeticTest-soft_double_nan.bin
++d4f841e6dd0ba1345558ad52aea06f12  arithmeticTest-soft_extended_basic.bin
++9da3a7258b0c12b1645d046d0f7ae9ac  arithmeticTest-soft_extended_lib.bin
++8f9f221b0e0f215505bc8e128ed19d38  arithmeticTest-soft_extended_nan.bin
++2abcb9afe59cc848975c09bf58d961ff  arithmeticTest-soft_simple_basic.bin
++8a66620315f8771c67477bd87333b896  arithmeticTest-soft_simple_lib.bin
++78aaf83f9fe476803b5c8d7373d4f10f  arithmeticTest-soft_simple_nan.bin
+--- /dev/null
++++ b/arithmeticTest-sse-nd.md5
+@@ -0,0 +1,6 @@
++a7bf08fc4c3ff85fbdf3380f346d000c  arithmeticTest-sse-nd_double_basic.bin
++7367ea100cd95f03b1d962cfafc83f07  arithmeticTest-sse-nd_double_lib.bin
++b3c62766ca965e841970d9a80414dfc4  arithmeticTest-sse-nd_double_nan.bin
++2abcb9afe59cc848975c09bf58d961ff  arithmeticTest-sse-nd_simple_basic.bin
++8a66620315f8771c67477bd87333b896  arithmeticTest-sse-nd_simple_lib.bin
++6cb3525ab1ea4416a153e1a2e3c21cf5  arithmeticTest-sse-nd_simple_nan.bin
+--- /dev/null
++++ b/arithmeticTest-sse.md5
+@@ -0,0 +1,6 @@
++a7bf08fc4c3ff85fbdf3380f346d000c  arithmeticTest-sse_double_basic.bin
++7367ea100cd95f03b1d962cfafc83f07  arithmeticTest-sse_double_lib.bin
++825de4e5d8c4742e34d809d2a101c720  arithmeticTest-sse_double_nan.bin
++2abcb9afe59cc848975c09bf58d961ff  arithmeticTest-sse_simple_basic.bin
++8a66620315f8771c67477bd87333b896  arithmeticTest-sse_simple_lib.bin
++78aaf83f9fe476803b5c8d7373d4f10f  arithmeticTest-sse_simple_nan.bin
+--- /dev/null
++++ b/arithmeticTest-x87-nd.md5
+@@ -0,0 +1,9 @@
++a7bf08fc4c3ff85fbdf3380f346d000c  arithmeticTest-x87-nd_double_basic.bin
++7367ea100cd95f03b1d962cfafc83f07  arithmeticTest-x87-nd_double_lib.bin
++5e92d071e2dc4d20a08bfae5fe6a0e11  arithmeticTest-x87-nd_double_nan.bin
++d4f841e6dd0ba1345558ad52aea06f12  arithmeticTest-x87-nd_extended_basic.bin
++9da3a7258b0c12b1645d046d0f7ae9ac  arithmeticTest-x87-nd_extended_lib.bin
++47352c4075ca8d309c4e558906b31f49  arithmeticTest-x87-nd_extended_nan.bin
++2abcb9afe59cc848975c09bf58d961ff  arithmeticTest-x87-nd_simple_basic.bin
++8a66620315f8771c67477bd87333b896  arithmeticTest-x87-nd_simple_lib.bin
++6b6e542b8c971173d50d4497ba0abeac  arithmeticTest-x87-nd_simple_nan.bin
+--- /dev/null
++++ b/arithmeticTest-x87.md5
+@@ -0,0 +1,9 @@
++a7bf08fc4c3ff85fbdf3380f346d000c  arithmeticTest-x87_double_basic.bin
++7367ea100cd95f03b1d962cfafc83f07  arithmeticTest-x87_double_lib.bin
++10716023647fb88d40b6ff8011975e3b  arithmeticTest-x87_double_nan.bin
++d4f841e6dd0ba1345558ad52aea06f12  arithmeticTest-x87_extended_basic.bin
++9da3a7258b0c12b1645d046d0f7ae9ac  arithmeticTest-x87_extended_lib.bin
++8f9f221b0e0f215505bc8e128ed19d38  arithmeticTest-x87_extended_nan.bin
++2abcb9afe59cc848975c09bf58d961ff  arithmeticTest-x87_simple_basic.bin
++8a66620315f8771c67477bd87333b896  arithmeticTest-x87_simple_lib.bin
++d91dbc8644272847d474fcf87b1515fb  arithmeticTest-x87_simple_nan.bin

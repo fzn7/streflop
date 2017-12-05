@@ -1,0 +1,5 @@
+01_sharedlib.diff
+02_gcc-fixes.diff
+03_makefile_common.diff
+04_pkg_config.diff
+05_unit_testing.diff

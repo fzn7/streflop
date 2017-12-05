@@ -1,0 +1,85 @@
+--- /dev/null
++++ b/streflop-sse.pc
+@@ -0,0 +1,14 @@
++prefix=/usr
++exec_prefix=${prefix}
++libdir=${exec_prefix}/@LIBDIR@
++includedir=${prefix}/@INCLUDEDIR@
++
++Name: streflop-sse
++Description: STREFLOP library with SSE FPU and Denormals
++Version: 0.3
++URL: http://nicolas.brodu.numerimoire.net/en/programmation/streflop/index.html
++Requires:
++Conflicts:
++Libs: -L${libdir} -lstreflop-sse
++Libs.private:  
++Cflags: -I${includedir} -DSTREFLOP_SSE=1
+--- /dev/null
++++ b/streflop-sse-nd.pc
+@@ -0,0 +1,14 @@
++prefix=/usr
++exec_prefix=${prefix}
++libdir=${exec_prefix}/@LIBDIR@
++includedir=${prefix}/@INCLUDEDIR@
++
++Name: streflop-sse-nd
++Description: STREFLOP library with SSE FPU and No Denormals
++Version: 0.3
++URL: http://nicolas.brodu.numerimoire.net/en/programmation/streflop/index.html
++Requires:
++Conflicts:
++Libs: -L${libdir} -lstreflop-sse-nd
++Libs.private:  
++Cflags: -I${includedir} -DSTREFLOP_SSE=1 -DSTREFLOP_NO_DENORMALS=1
+--- /dev/null
++++ b/streflop-x87-nd.pc
+@@ -0,0 +1,14 @@
++prefix=/usr
++exec_prefix=${prefix}
++libdir=${exec_prefix}/@LIBDIR@
++includedir=${prefix}/@INCLUDEDIR@
++
++Name: streflop-x87-nd
++Description: STREFLOP library with x87 FPU and No Denormals
++Version: 0.3
++URL: http://nicolas.brodu.numerimoire.net/en/programmation/streflop/index.html
++Requires:
++Conflicts:
++Libs: -L${libdir} -lstreflop-x87-nd
++Libs.private:  
++Cflags: -I${includedir} -DSTREFLOP_X87=1 -DSTREFLOP_NO_DENORMALS=1
+--- /dev/null
++++ b/streflop-x87.pc
+@@ -0,0 +1,14 @@
++prefix=/usr
++exec_prefix=${prefix}
++libdir=${exec_prefix}/@LIBDIR@
++includedir=${prefix}/@INCLUDEDIR@
++
++Name: streflop-x87
++Description: STREFLOP library with x87 FPU and Denormals
++Version: 0.3
++URL: http://nicolas.brodu.numerimoire.net/en/programmation/streflop/index.html
++Requires:
++Conflicts:
++Libs: -L${libdir} -lstreflop-x87
++Libs.private:  
++Cflags: -I${includedir} -DSTREFLOP_X87=1
+--- /dev/null
++++ b/streflop-soft.pc
+@@ -0,0 +1,14 @@
++prefix=/usr
++exec_prefix=${prefix}
++libdir=${exec_prefix}/@LIBDIR@
++includedir=${prefix}/@INCLUDEDIR@
++
++Name: streflop-soft
++Description: STREFLOP library with software emulation and Denormals
++Version: 0.3
++URL: http://nicolas.brodu.numerimoire.net/en/programmation/streflop/index.html
++Requires:
++Conflicts:
++Libs: -L${libdir} -lstreflop-soft
++Libs.private:  
++Cflags: -I${includedir} -DSTREFLOP_SOFT=1
