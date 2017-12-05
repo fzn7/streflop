@@ -1,0 +1,14 @@
+prefix=/usr
+exec_prefix=${prefix}
+libdir=${exec_prefix}/@LIBDIR@
+includedir=${prefix}/@INCLUDEDIR@
+
+Name: streflop-x87
+Description: STREFLOP library with x87 FPU and Denormals
+Version: 0.3
+URL: http://nicolas.brodu.numerimoire.net/en/programmation/streflop/index.html
+Requires:
+Conflicts:
+Libs: -L${libdir} -lstreflop-x87
+Libs.private:  
+Cflags: -I${includedir} -DSTREFLOP_X87=1

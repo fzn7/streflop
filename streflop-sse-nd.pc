@@ -1,0 +1,14 @@
+prefix=/usr
+exec_prefix=${prefix}
+libdir=${exec_prefix}/@LIBDIR@
+includedir=${prefix}/@INCLUDEDIR@
+
+Name: streflop-sse-nd
+Description: STREFLOP library with SSE FPU and No Denormals
+Version: 0.3
+URL: http://nicolas.brodu.numerimoire.net/en/programmation/streflop/index.html
+Requires:
+Conflicts:
+Libs: -L${libdir} -lstreflop-sse-nd
+Libs.private:  
+Cflags: -I${includedir} -DSTREFLOP_SSE=1 -DSTREFLOP_NO_DENORMALS=1
