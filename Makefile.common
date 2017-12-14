@@ -3,7 +3,8 @@
 ####################################
 
 # 1. Change this to your compiler (g++ 4.1 is recommended). If you're not using g++, check for equivalent options below.
-CXX=g++
+#CXX=g++
+CXX=em++
 
 # 2. Set the correct type for your architecture
 # 2a: One of:
@@ -34,7 +35,7 @@ ifdef STREFLOP_X87
 CXXFLAGS += -mfpmath=387
 endif
 ifdef STREFLOP_SSE
-CXXFLAGS += -mfpmath=sse -msse -msse2
+CXXFLAGS += -msse
 endif
 
 
